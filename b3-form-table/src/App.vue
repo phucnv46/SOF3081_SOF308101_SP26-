@@ -23,7 +23,7 @@
         <a-button type="primary" @click.stop="students.splice(index, 1)"
           style="background-color: #fa5f5f; color:#ffffff;">Xóa</a-button>
         <a-button type="primary" @click.stop="students[index] = { ...newStudent }"
-          style="background-color: #2e2e; color:#ffffff;">Cập nhật</a-button>
+          style="background-color: #2e2e; color:#ffffff;margin-left: 20px;">Cập nhật</a-button>
       </template>
     </template>
   </a-table>
