@@ -1,91 +1,88 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue';
-import Table from 'ant-design-vue/es/table/Table';
 import axios from 'axios';
 import { message } from 'ant-design-vue';
 
 const posts = ref([]);
-const post = reactive(
-  {
-    id: -1,
-    title: '',
-    views: 0,
-  }
-)
+const post = reactive({
+  title: '',
+  views: 0,
+});
 
 const columns = [
-  {
-    dataIndex: 'id',
-    title: 'id'
-  },
-  {
-    dataIndex: 'title',
-    title: 'title'
-  },
-  {
-    dataIndex: 'views',
-    title: 'views'
-  },
-]
+  { dataIndex: 'id', title: 'ID' },
+  { dataIndex: 'title', title: 'Title' },
+  { dataIndex: 'views', title: 'Views' },
+];
 
-const fetchData = () => {
-  axios.get('http://localhost:3000/posts'.trim()).then(
-    res => posts.value = res.data
-  )
-}
-
-const addPost = () => {
-  const newId = 1;
-  if (posts.value.length === 0) {
-    newId = 1;
-  } else {
-    newId = Math.max(...posts.value.map(x => x.id)) + 1;
+const fetchData = async () => {
+  try {
+    const res = await axios.get('http://localhost:3000/posts');
+    posts.value = res.data;
+  } catch (error) {
+    console.error("Lỗi lấy dữ liệu:", error);
   }
-  post.id = newId
-  axios.post('http://localhost:3000/posts', { ...post }).then(
-    res => console.log(res)
-  )
+};
 
-  fetchData();
-  resetForm()
-}
+const addPost = async () => {
+  // Kiểm tra dữ liệu đầu vào
+  if (!post.title) {
+    return message.error("Vui lòng nhập Title");
+  }
+
+  try {
+    // 1. Tính toán ID mới (Dùng let, không dùng const)
+    let newId = posts.value.length === 0
+      ? 1
+      : Math.max(...posts.value.map(x => Number(x.id))) + 1;
+
+    // 2. Gửi dữ liệu (Sử dụng await để đợi server phản hồi xong)
+    await axios.post('http://localhost:3000/posts', {
+      id: String(newId), // JSON server thường dùng string cho ID
+      title: post.title,
+      views: post.views
+    });
+
+    message.success("Thêm thành công!");
+
+    // 3. Sau khi thêm xong mới fetch và reset
+    await fetchData();
+    resetForm();
+  } catch (error) {
+    message.error("Có lỗi xảy ra khi thêm!");
+  }
+};
 
 const resetForm = () => {
-  post.id = -1
-  post.title = '',
-    post.views = 0
-}
+  post.title = '';
+  post.views = 0;
+};
 
 onMounted(() => {
-  fetchData()
-})
-
+  fetchData();
+});
 </script>
 
 <template>
+  <div style="padding: 20px;">
+    <a-form :model="post" :labelCol="{ span: 4 }" :wrapperCol="{ span: 16 }">
+      <a-form-item label="Title" required :rules="[{ required: true, message: 'Title đang trống', change: 'blur' }]">
+        <a-input v-model:value="post.title" placeholder="Nhập tiêu đề..."></a-input>
+      </a-form-item>
+      <a-form-item label="Views">
+        <a-input-number v-model:value="post.views" :min="0" style="width: 100%"></a-input-number>
+      </a-form-item>
 
+      <a-row>
+        <a-col :offset="4">
+          <a-button type="primary" @click="addPost">Thêm bài viết</a-button>
+        </a-col>
+      </a-row>
+    </a-form>
 
-  <a-form :model="post" :labelCol="{ offset: 4, span: 2 }" :wrapperCol="{ span: 12 }">
-    <a-form-item label="title" name="title" required :rules="[{ required: true, message: 'Không được để trống' }]">
-      <a-input v-model:value="post.title"></a-input>
-    </a-form-item>
-    <a-form-item label="views">
-      <a-input-number v-model:value="post.views" :min="0"></a-input-number>
-    </a-form-item>
-  </a-form>
+    <a-divider />
 
-  <a-row style="margin-bottom: 20px;">
-    <a-col :offset="6">
-      <a-button type="primary" @click.prevent.stop="addPost">Thêm</a-button>
-    </a-col>
-  </a-row>
-
-  <a-table :dataSource="posts" :columns="columns">
-
-  </a-table>
-
-
-
+    <a-table :dataSource="posts" :columns="columns" :rowKey="record => record.id">
+    </a-table>
+  </div>
 </template>
-
-<style scoped></style>
