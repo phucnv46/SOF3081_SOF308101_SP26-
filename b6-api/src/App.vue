@@ -3,6 +3,7 @@ import { onMounted, reactive, ref } from 'vue';
 import axios from 'axios';
 import { message } from 'ant-design-vue';
 
+const isEdit = ref(false)
 const posts = ref([]);
 const post = reactive({
   title: '',
@@ -13,6 +14,7 @@ const columns = [
   { dataIndex: 'id', title: 'ID' },
   { dataIndex: 'title', title: 'Title' },
   { dataIndex: 'views', title: 'Views' },
+  { key: 'action', title: 'Hành động' },
 ];
 
 const fetchData = async () => {
@@ -53,6 +55,38 @@ const addPost = async () => {
   }
 };
 
+
+const updatePost = () => {
+  axios.put(`http://localhost:3000/posts/${post.id}`, { ...post }).then(
+    res => {
+      if (res.status === 200) {
+        message.success('Cập nhật post thành công!')
+        fetchData();
+      } else {
+        message.error('Có lỗi về mạng')
+      }
+    }
+  ).catch(error => {
+    message.error(error.message)
+  })
+}
+
+
+const deletePost = (id) => {
+  axios.delete(`http://localhost:3000/posts/${id}`).then(
+    res => {
+      if (res.status === 200) {
+        message.success('Xóa post thành công!')
+        fetchData();
+      } else {
+        message.error('Có lỗi về mạng')
+      }
+    }
+  ).catch(error => {
+    message.error(error.message)
+  })
+}
+
 const resetForm = () => {
   post.title = '';
   post.views = 0;
@@ -75,7 +109,10 @@ onMounted(() => {
 
       <a-row>
         <a-col :offset="4">
-          <a-button type="primary" @click="addPost">Thêm bài viết</a-button>
+          <a-button type="primary" @click="addPost" v-if="isEdit === false">Thêm bài viết</a-button>
+          <a-button type="primary" @click="updatePost" v-if="isEdit === true">Cập nhật</a-button>
+          <a-button type="primary" @click="isEdit = false" v-if="isEdit === true"
+            style="margin-left: 15px;background-color: #a2ae12;">Hủy</a-button>
         </a-col>
       </a-row>
     </a-form>
@@ -83,6 +120,18 @@ onMounted(() => {
     <a-divider />
 
     <a-table :dataSource="posts" :columns="columns" :rowKey="record => record.id">
+      <template #bodyCell="{ record, column }">
+        <div v-if="column.key === 'action'">
+          <a-button type="primary" @click="() => {
+            isEdit = true;
+            Object.assign(post, { ...record })
+          }">Sửa</a-button>
+          <a-divider type="vertical"></a-divider>
+          <a-popconfirm title="Chắc chưa?" okText="Chắc" cancelText="Hông" @confirm="deletePost(record.id)">
+            <a-button type="primary" style="background-color: crimson;">Xóa</a-button>
+          </a-popconfirm>
+        </div>
+      </template>
     </a-table>
   </div>
 </template>
