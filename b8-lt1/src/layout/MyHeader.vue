@@ -12,9 +12,18 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
 
-const current = ref(['tg'])
+const route = useRoute()
+
+// Sửa lỗi mỗi khi reload path không khớp với menu
+const current = computed(() => {
+    if (route.path === '/tacgia') return ['tg'];
+    if (route.path === '/page') return ['pages'];
+    return [];
+});
+
 </script>
 
 <style scoped></style>
