@@ -18,6 +18,7 @@ import { useRoute } from 'vue-router';
 const route = useRoute()
 
 // Sửa lỗi mỗi khi reload path không khớp với menu
+// computed => tạo ra tham chiếu mới từ tham chiếu cũ bắt buộc phải viết dạng hàm
 const current = computed(() => {
     if (route.path === '/tacgia') return ['tg'];
     if (route.path === '/page') return ['pages'];
