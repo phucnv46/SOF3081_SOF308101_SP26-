@@ -120,6 +120,7 @@ const xoaTacGia = () => {
     ds.splice(index, 1);
     router.push(`/tac-gia/${tacgia.id}/remove`)
     message.success('Xóa thành công')
+    resetForm() // reset lại form khi xóa thành công
 }
 
 </script>
