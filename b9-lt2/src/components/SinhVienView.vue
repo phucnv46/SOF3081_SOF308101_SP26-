@@ -2,8 +2,9 @@
     <div>
         <h1 style="text-align: center;" class="m-5">Quản lý sinh viên</h1>
         <a-form :model="sv" :labelCol="{ offset: 4, span: 4 }" :wrapperCol="{ span: 10 }">
-            <a-form-item name="hoTen" label="Họ tên">
-                <a-input v-model:value="sv.hoTen"></a-input>
+            <a-form-item name="hoTen" label="Họ tên"
+                :rules="[{ required: true, message: 'Họ tên không được để trống' }]">
+                <a-input v-model:value.trim="sv.hoTen"></a-input>
             </a-form-item>
             <a-form-item name="gioiTinh" label="Giới tính">
                 <a-radio-group v-model:value="sv.gioiTinh">
@@ -13,8 +14,8 @@
             </a-form-item>
             <a-form-item name="nganhHoc" label="Ngành học">
                 <a-select v-model:value="sv.nganhHoc">
-                    <a-select-option key="ptpm" value="ptpm">Phát triển phần mềm</a-select-option>
-                    <a-select-option key="ltw" value="ltw">Lập trình web</a-select-option>
+                    <a-select-option key="ptpm" value="Phát triển phần mềm">Phát triển phần mềm</a-select-option>
+                    <a-select-option key="ltw" value="Lập trình web">Lập trình web</a-select-option>
                 </a-select>
             </a-form-item>
             <a-form-item name="tuoi" label="Tuổi">
@@ -24,10 +25,10 @@
 
         <a-row class="m-4">
             <a-col :offset="8" :span="4">
-                <a-button type="primary">Thêm</a-button>
+                <a-button type="primary" @click.prevent="themSV">Thêm</a-button>
             </a-col>
             <a-col :offset="4" :span="4">
-                <a-button type="primary" style="background-color: #2fe111;">Sửa</a-button>
+                <a-button type="primary" class="bg-success">Sửa</a-button>
             </a-col>
         </a-row>
 
@@ -37,12 +38,15 @@
 </template>
 
 <script setup>
+import { message } from 'ant-design-vue';
 import { reactive, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
 
-const sv = reactive({ id: -1, hoTen: '', gioiTinh: true, nganhHoc: '', tuoi: 18 });
+const sv = reactive({ id: -1, hoTen: '', gioiTinh: true, nganhHoc: 'Phát triển phần mềm', tuoi: 18 });
 
-const ds = reactive([{ id: 1, hoTen: 'Nguyễn Văn Phúc', gioiTinh: true, nganhHoc: 'ktpm', tuoi: 18 }])
+const ds = reactive([{ id: 1, hoTen: 'Nguyễn Văn Phúc', gioiTinh: true, nganhHoc: 'Phát triển phần mềm', tuoi: 18 }])
 
 const cols = [
     {
@@ -77,6 +81,43 @@ const cols = [
         title: 'Tuổi'
     },
 ]
+
+
+function themSV() {
+
+
+    if (!sv.hoTen) {
+        message.error('Họ tên đang trống');
+        return;
+    }
+
+    // neu list dang trong thi id = 1, list co phan tu thi id moi = id lon nhat + 1
+    let newId = ds.length === 0 ? 1 : Math.max(...ds.map(sv => sv.id)) + 1;
+    sv.id = newId
+
+
+    const svMoi = { ...sv }
+
+
+    ds.push(svMoi)
+    router.push('/sv/add') // đổi route
+
+    clearForm()
+    message.success('thêm thành công')
+
+
+
+}
+
+function clearForm() {
+    sv.id = -1
+    sv.hoTen = ''
+    sv.gioiTinh = true
+    sv.nganhHoc = 'Phát triển phần mềm'
+    sv.tuoi = 18
+
+
+}
 
 </script>
 
