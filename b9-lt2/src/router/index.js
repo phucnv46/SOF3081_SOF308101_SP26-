@@ -8,6 +8,7 @@ const router = createRouter({
     {path:'/', component:()=>SinhVienView},
     {path:'/sv', component:()=>SinhVienView},
     {path:'/sv/add', component:()=>SinhVienView},
+    {path:'/sv/:id/update', component:()=>SinhVienView},
     {path:'/lop', component:()=>LopView},
 
   ],

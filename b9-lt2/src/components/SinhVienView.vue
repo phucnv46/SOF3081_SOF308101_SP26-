@@ -4,7 +4,7 @@
         <a-form :model="sv" :labelCol="{ offset: 4, span: 4 }" :wrapperCol="{ span: 10 }">
             <a-form-item name="hoTen" label="Họ tên"
                 :rules="[{ required: true, message: 'Họ tên không được để trống' }]">
-                <a-input v-model:value.trim="sv.hoTen"></a-input>
+                <a-input v-model:value="sv.hoTen"></a-input>
             </a-form-item>
             <a-form-item name="gioiTinh" label="Giới tính">
                 <a-radio-group v-model:value="sv.gioiTinh">
@@ -28,13 +28,26 @@
                 <a-button type="primary" @click.prevent="themSV">Thêm</a-button>
             </a-col>
             <a-col :offset="4" :span="4">
-                <a-button type="primary" class="bg-success">Sửa</a-button>
+                <a-button type="primary" class="bg-success" @click="open = true">Sửa</a-button>
             </a-col>
         </a-row>
 
     </div>
 
-    <a-table :dataSource="ds" :columns="cols"></a-table>
+    <a-table :dataSource="ds" :columns="cols" :customRow="(record, index) => {
+        return {
+            onClick: (e) => {
+                Object.assign(sv, { ...record })
+
+            }
+        }
+    }"></a-table>
+
+
+    <a-modal v-model:open="open" :okText="`Có`" :cancelText="'Hông'" @ok="capNhatSinhVien" title="Sure????">
+        <p>Bạn có chắc muốn cập nhật không</p>
+    </a-modal>
+
 </template>
 
 <script setup>
@@ -43,6 +56,8 @@ import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
+
+const open = ref(false)
 
 const sv = reactive({ id: -1, hoTen: '', gioiTinh: true, nganhHoc: 'Phát triển phần mềm', tuoi: 18 });
 
@@ -117,6 +132,39 @@ function clearForm() {
     sv.tuoi = 18
 
 
+}
+
+function capNhatSinhVien() {
+
+
+    try {
+
+        if (sv.id === -1) {
+            message.error('Chưa chọn sv cần cập nhật');
+            open.value = false;
+            return;
+        }
+
+        if (!sv.hoTen) {
+            open.value = false;
+            message.error('thiếu tên sinh viên');
+            return;
+        }
+
+
+        const svCapNhat = ds.find(s => s.id === sv.id)
+        Object.assign(svCapNhat, { ...sv })
+
+        message.success('Cập nhật thành công!');
+
+        router.push(`/sv/${sv.id}/update`)
+
+        clearForm();
+
+        open.value = false
+    } catch (error) {
+
+    }
 }
 
 </script>
