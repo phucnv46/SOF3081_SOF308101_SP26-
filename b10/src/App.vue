@@ -8,6 +8,20 @@ const formatter = new Intl.NumberFormat('vi-VN', {
   style: 'currency',
   currency: 'VND',
 });
+
+
+const loais = [...new Set(quanao.map(qa => qa.loai))]
+
+const options = loais.map(l => ({
+  label: l, value: l
+}));
+
+const loaiDuocChon = reactive({ value: [] })
+
+const layTheoLoai = (loai = 'ao') => {
+  return quanao.filter(qa => qa.loai.toLowerCase() === loai.toLowerCase())
+}
+
 </script>
 
 <template>
@@ -44,7 +58,13 @@ const formatter = new Intl.NumberFormat('vi-VN', {
 
   <a-row :gutter="[20, 20]">
     <a-col :span="6" :offset="2">
-      <h1>Filter</h1>
+      <a-card title="Filter">
+        <a-checkbox-group v-model:value="loaiDuocChon.value" :options="options">
+
+        </a-checkbox-group>
+        {{ loaiDuocChon }}
+
+      </a-card>
     </a-col>
     <a-col :span="16">
       <a-row :gutter="[0, 50]">
