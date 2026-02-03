@@ -1,26 +1,32 @@
 <script setup>
+import { ref, reactive, computed } from 'vue'; // Thêm ref và computed
 import { ShoppingCartOutlined, UserOutlined } from '@ant-design/icons-vue';
 import quanao from './data';
-import { reactive } from 'vue';
 
-const ds = reactive(quanao)
+// 1. Dữ liệu gốc
+const dsGoc = quanao;
+
+// 2. State cho các checkbox đã chọn
+// Lưu ý: Dùng ref cho mảng đơn giản sẽ dễ quản lý v-model hơn
+const loaiDuocChon = ref([]);
+
 const formatter = new Intl.NumberFormat('vi-VN', {
   style: 'currency',
   currency: 'VND',
 });
 
+const loais = [...new Set(dsGoc.map(qa => qa.loai))];
+const options = loais.map(l => ({ label: l, value: l }));
 
-const loais = [...new Set(quanao.map(qa => qa.loai))]
+const dsHienThi = computed(() => {
+  if (loaiDuocChon.value.length === 0) {
+    return dsGoc;
+  }
+  return dsGoc.filter(qa => loaiDuocChon.value.includes(qa.loai));
+});
 
-const options = loais.map(l => ({
-  label: l, value: l
-}));
 
-const loaiDuocChon = reactive({ value: [] })
 
-const layTheoLoai = (loai = 'ao') => {
-  return quanao.filter(qa => qa.loai.toLowerCase() === loai.toLowerCase())
-}
 
 </script>
 
@@ -68,7 +74,7 @@ const layTheoLoai = (loai = 'ao') => {
     </a-col>
     <a-col :span="16">
       <a-row :gutter="[0, 50]">
-        <a-col :span="8" v-for="(qa, index) in ds" :key="index">
+        <a-col :span="8" v-for="(qa, index) in dsHienThi" :key="index">
 
           <a-card hoverable style="width: 240px; height:33em">
             <template #cover>
